@@ -6,7 +6,7 @@ enum class Direction {
     UP,
     RIGHT,
     DOWN,
-    NONE,
 };
 
 #endif //SLITHER_IO_DIRECTION_H
+
