@@ -10,18 +10,23 @@ public:
     virtual ~Cell();
 
     int getFoodBenefit() const;
+
     void setFoodBenefit(int foodBenefit);
 
     int getClientInGameId() const;
+
     void setClientInGameId(int clientInGameId);
 
     const int getX() const;
+
     const int getY() const;
 
     const bool isWall() const;
 
     const bool isPortal() const;
+
     const int getPortalX() const;
+
     const int getPortalY() const;
 
 private:

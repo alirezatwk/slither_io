@@ -1,4 +1,4 @@
-#include <deque>
+#include <queue>
 #include "Cell.h"
 #include "Direction.h"
 
@@ -9,8 +9,23 @@
 
 class Client {
 public:
-    Client(const int inGameId, const int gameId, Direction lastDirection, const std::deque<Cell &> &cells);
+    Client(const int inGameId, const int gameId, Direction lastDirection, const std::queue<Cell &> &cells);
 
+    bool isAlive() const;
+
+    void setAlive(bool alive);
+
+    int getRemainBenefits() const;
+
+    void setRemainBenefits(int remainBenefits);
+
+    int getLenght() const;
+
+    Cell &getcell(int i) const;
+
+    void addCell(const Cell &cell);
+
+    void removeLastCell();
 
 private:
     const int inGameId;
@@ -21,7 +36,7 @@ private:
 
     Direction lastDirection;
 
-    std::deque<Cell &> cells;
+    std::queue<Cell &> cells;
 };
 
 
