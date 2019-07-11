@@ -1,146 +1,112 @@
 #include <iostream>
 #include <sstream>
-#include <list>
-#include <vector>
+#include <map>
+#include <random>
+
 #include <SFML/Network.hpp>
 #include "proto/communication.pb.h"
 #include "proto/database.pb.h"
-#include "proto/request.pb.h"
 #include "proto/response.pb.h"
 #include "proto/types.pb.h"
+#include "proto/request.pb.h"
 
-#include <iostream>
-#include <sstream>
-#include <SFML/Network.hpp>
-#include "messages.pb.h"
+#include "model/ServerQueue.h"
+#include "model/ServerUser.h"
 
 const unsigned short PORT = 5000;
 const std::string IPADDRESS("127.0.0.1");
 
-std::string name;
-std::string msgSend;
-bool new_message = false;
+std::vector<ServerQueue *> queues;
+std::vector<ServerUser *> users;
 
-sf::TcpListener listener;
-sf::TcpSocket socket;
-sf::Mutex globalMutex;
+std::map<int, sf::Thread *> threadId;
+std::map<int, sf::TcpSocket *> socketId;
+
 bool quit = false;
 
-char who;
+sf::Mutex globalMutex;
 
-void Sender(int x) {
-    while (!quit) {
-        std::cout << x << std::endl;
-        sf::Packet packetSend;
-        bool send = false;
-        globalMutex.lock();
-        if (new_message) {
-            new_message = false;
-            send = true;
+std::string hashFunction(std::string password) {
+    // TODO
+    return password;
+}
 
-            Message msg;
-            msg.set_name(name);
-            msg.set_chat_message(msgSend);
+bool checkUser(std::string username, std::string hashPassword) {
 
-            std::stringstream stream;
-            msg.SerializeToOstream(&stream);
+}
 
-            packetSend << stream.str();
+
+int generateSessionId() {
+    return rand();
+}
+
+
+void Response(int id) {
+    sf::TcpSocket *socket = socketId[id];
+
+
+    sf::Packet packetReceive;
+    socket->receive(packetReceive);
+
+//    globalMutex.lock();
+    std::string reqStr;
+    packetReceive >> reqStr;
+
+    Request req;
+    req.ParseFromString(reqStr);
+
+    if (req.has_login()) {
+        const request::Login &reqLogin = req.login();
+        // Ba farz inke seda kardan e tabe dige to ye threadi gand nemizane.
+
+        if (checkUser(reqLogin.username(), hashFunction(reqLogin.password()))) {
+            int sessionId = generateSessionId();
+
+            response::Login resLogin;
         }
-        globalMutex.unlock();
-
-        if (send)
-            socket.send(packetSend);
-    }
-}
-
-void Receiver(void) {
-    while (!quit) {
-        std::string msgStr;
-        sf::Packet packetReceive;
-
-        socket.receive(packetReceive);
-        if (packetReceive >> msgStr) {
-            Message msg;
-            msg.ParseFromString(msgStr);
-
-            std::cout << msg.name() << ": " << msg.chat_message() << std::endl;
-        }
 
     }
-}
+    if (req.has_register_()) {
+        const request::Register &reqRegister = req.register_();
 
-void Server(void) {
-    listener.listen(PORT);
-    listener.accept(socket);
-    std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
-}
-
-bool Client(void) {
-    if (socket.connect(IPADDRESS, PORT) == sf::Socket::Done) {
-        std::cout << "Connected\n";
-        return true;
     }
-    return false;
-}
 
-void GetInput(void) {
-    while (!quit) {
-        std::string s;
-        getline(std::cin, s);
-        if (s == "quit")
-            quit = true;
-        globalMutex.lock();
-        msgSend = s;
-        new_message = true;
-        globalMutex.unlock();
-    }
-}
 
+    sf::Packet packetSend;
+
+
+    std::stringstream stream;
+    msg.SerializeToOstream(&stream);
+
+    packetSend << stream.str();
+
+
+    socket->send(packetSend);
+
+    // Ba farze inke beshe hamaro delete kard.
+    delete socketId[id];
+    socketId.erase(id);
+    sf::Thread *tmp = threadId[id];
+    threadId.erase(id);
+    delete tmp;
+}
 
 int main(int argc, char *argv[]) {
-    sf::Thread *receiver_thread = 0, *sender_thread = 0, *getInput_thread = 0;
 
-    std::cout << "Do you want to be a server (s) or a client (c) ? ";
-    std::cin >> who;
+    srand(time(0));
 
-    std::string temp;
-    getline(std::cin, temp);
+    sf::TcpListener listener;
+    listener.listen(PORT);
 
-    socket.setBlocking(false);
-
-    if (who == 's')
-        Server();
-    else
-        Client();
-
-    receiver_thread = new sf::Thread(&Receiver);
-    sender_thread = new sf::Thread(&Sender);
-    getInput_thread = new sf::Thread(&GetInput);
-    receiver_thread->launch();
-    sender_thread->launch();
-    getInput_thread->launch();
-
-
+    int id = 0;
     while (!quit) {
-        if (who == 's') {
-            listener.listen(PORT);
-            listener.accept(socket);
-            std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
-        }
+        auto *socket = new sf::TcpSocket;
+        listener.accept(*socket);
+        auto *thread = new sf::Thread(&Response, id);
+        socketId[id] = socket;
+        threadId[id] = thread;
+        thread->launch();
     }
 
-    if (getInput_thread) {
-        getInput_thread->wait();
-        delete getInput_thread;
-    }
-    if (sender_thread) {
-        sender_thread->wait();
-        delete sender_thread;
-    }
-    if (receiver_thread) {
-        receiver_thread->wait();
-        delete receiver_thread;
-    }
     return 0;
 }
