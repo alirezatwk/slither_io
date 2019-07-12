@@ -2,6 +2,7 @@
 #include <sstream>
 #include <map>
 #include <random>
+#include <fstream>
 
 #include <SFML/Network.hpp>
 #include "proto/communication.pb.h"
@@ -15,6 +16,7 @@
 
 const unsigned short PORT = 5000;
 const std::string IPADDRESS("127.0.0.1");
+const std::string DATABASE("database.txt");
 
 std::vector<ServerQueue *> queues;
 std::vector<ServerUser *> users;
@@ -27,14 +29,91 @@ bool quit = false;
 sf::Mutex globalMutex;
 
 std::string hashFunction(std::string password) {
-    // TODO
     return password;
+} // TODO
+
+bool checkUser(const std::string &username, const std::string &password) {
+    const std::string &hashPassword = hashFunction(password);
+
+    std::ifstream fIn;
+    fIn.open(DATABASE);
+
+    database::User user;
+
+    std::string userStr;
+    while (fIn) {
+        fIn >> userStr;
+        user.ParseFromString(userStr);
+        if (username == user.username() && hashPassword == user.password()) {
+            fIn.close();
+            return true;
+        }
+    }
+    fIn.close();
+    return false;
 }
 
-bool checkUser(std::string username, std::string hashPassword) {
+bool hadUsername(const std::string &username) {
+    std::ifstream fIn;
+    fIn.open(DATABASE);
 
+    database::User user;
+
+    std::string userStr;
+    while (fIn) {
+        fIn >> userStr;
+        user.ParseFromString(userStr);
+        if (username == user.username()) {
+            fIn.close();
+            return true;
+        }
+    }
+    fIn.close();
+    return false;
 }
 
+void addUserToUsers(const std::string &username, const int sessionId) {
+    std::ifstream fIn;
+    fIn.open(DATABASE);
+
+    database::User user;
+
+    std::string userStr;
+    while (fIn) {
+        fIn >> userStr;
+        user.ParseFromString(userStr);
+        if (username == user.username()) {
+            auto newUser = new ServerUser(static_cast<int>(user.id()), user.name(), user.username(),
+                                          user.password(), static_cast<int>(user.score()), sessionId, -1);
+            users.push_back(newUser);
+            fIn.close();
+            return;
+        }
+    }
+}
+
+bool makeUser(const std::string &name, const std::string &username, const std::string &password) {
+    if (hadUsername(username))
+        return false;
+    database::User newUser;
+    newUser.set_id(1);
+    newUser.set_session_id(0);
+    newUser.set_name(name);
+    newUser.set_username(username);
+    newUser.set_password(hashFunction(password));
+    newUser.set_score(0);
+    newUser.set_game_id(0);
+    newUser.set_queue_id(0);
+
+    std::string str;
+    newUser.SerializeToString(&str);
+
+    std::ofstream fOut;
+    fOut.open(DATABASE, std::ios_base::app);
+    fOut << str;
+    fOut.close();
+    return true;
+}
 
 int generateSessionId() {
     return rand();
@@ -55,22 +134,33 @@ void Response(int id) {
     Request req;
     req.ParseFromString(reqStr);
 
+    Response
+    res;
+
     if (req.has_login()) {
         const request::Login &reqLogin = req.login();
-        // Ba farz inke seda kardan e tabe dige to ye threadi gand nemizane.
 
-        if (checkUser(reqLogin.username(), hashFunction(reqLogin.password()))) {
+        // Ba farz inke seda kardan e tabe dige to ye threadi gand nemizane.
+        if (checkUser(reqLogin.username(), reqLogin.password())) {
             int sessionId = generateSessionId();
 
-            response::Login resLogin;
-        }
+            addUserToUsers(reqLogin.username(), sessionId);
 
+            auto resLogin = new response::Login;
+            resLogin->set_session_id((uint) sessionId);
+            res.set_allocated_login(resLogin); // TODO Nemidonam
+        }
+        // TODO else
     }
     if (req.has_register_()) {
         const request::Register &reqRegister = req.register_();
+        auto resRegister = new response::Register;
+        resRegister->set_success(makeUser(reqRegister.name(), reqRegister.username(), reqRegister.password()));
+    }
+    if (req.has_user_info()) {
+        const request::UserInfo &reqUserInfo = req.user_info();
 
     }
-
 
     sf::Packet packetSend;
 

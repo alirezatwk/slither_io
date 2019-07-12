@@ -7,15 +7,16 @@
 class ServerUser {
 public:
 
-
+    ServerUser(int id, const std::string &name, const std::string &username, const std::string &password,
+               int score, int sessionId, int queueId);
 
 private:
     const int id;
 
     std::string name;
 
-    std::string username;
-    std::string password;
+    const std::string username;
+    const std::string password;
 
     int score;
 
