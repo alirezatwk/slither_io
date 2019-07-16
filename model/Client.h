@@ -1,15 +1,18 @@
+#include <string>
 #include <queue>
 #include "Cell.h"
 #include "Direction.h"
+#include "ServerUser.h"
 
 #ifndef SLITHER_IO_CLIENT_H
 #define SLITHER_IO_CLIENT_H
 
-// TODO inherit User
 
-class Client {
+class Client : public ServerUser {
 public:
-    Client(const int inGameId, const int gameId, Direction lastDirection, const std::queue<Cell &> &cells);
+    Client(ServerUser *serverUser, int gameId, int inGameId, const std::queue<Cell &> &cells);
+    Client(int id, std::string &name, std::string &username, std::string &password, int score, int sessionId,
+           int queueId, int inGameId, int gameId, const std::queue<Cell &> &cells);
 
     bool isAlive() const;
 
@@ -27,14 +30,19 @@ public:
 
     void removeLastCell();
 
+    const int getGameId() const;
+
+    int getInGameId() const;
+
+    void setInGameId(int inGameId);
+
 private:
-    const int inGameId;
-    const int gameId;
+    int gameId;
+
+    int inGameId;
 
     bool alive;
     int remainBenefits;
-
-    Direction lastDirection;
 
     std::queue<Cell &> cells;
 };

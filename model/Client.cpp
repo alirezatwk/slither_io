@@ -5,9 +5,18 @@
 #include "Client.h"
 
 
-Client::Client(const int inGameId, const int gameId, Direction lastDirection, const std::queue<Cell &> &cells)
-        : inGameId(inGameId), gameId(gameId), lastDirection(lastDirection),
-          cells(cells), alive(true), remainBenefits(0) {}
+Client::Client(ServerUser *serverUser, int gameId, int inGameId,
+               const std::queue<Cell &> &cells) : ServerUser(serverUser),
+                                                  inGameId(inGameId),
+                                                  gameId(gameId),
+                                                  cells(cells) {}
+
+Client::Client(int id, std::string &name, std::string &username, std::string &password, int score, int sessionId,
+               int queueId, const int inGameId, const int gameId,
+               const std::queue<Cell &> &cells) : inGameId(inGameId), gameId(gameId),
+                                                  cells(cells), alive(true), remainBenefits(0),
+                                                  ServerUser(id, name, username, password, score, sessionId,
+                                                             queueId, true) {}
 
 bool Client::isAlive() const {
     return alive;
@@ -40,3 +49,16 @@ void Client::addCell(const Cell &cell) {
 void Client::removeLastCell() {
     cells.pop();
 }
+
+const int Client::getGameId() const {
+    return gameId;
+}
+
+int Client::getInGameId() const {
+    return inGameId;
+}
+
+void Client::setInGameId(int inGameId) {
+    Client::inGameId = inGameId;
+}
+
