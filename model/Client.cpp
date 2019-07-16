@@ -6,14 +6,14 @@
 
 
 Client::Client(ServerUser *serverUser, int gameId, int inGameId,
-               const std::queue<Cell &> &cells) : ServerUser(serverUser),
-                                                  inGameId(inGameId),
-                                                  gameId(gameId),
-                                                  cells(cells) {}
+               std::deque<Cell *> *cells) : ServerUser(serverUser),
+                                            inGameId(inGameId),
+                                            gameId(gameId),
+                                            cells(cells) {}
 
 Client::Client(int id, std::string &name, std::string &username, std::string &password, int score, int sessionId,
                int queueId, const int inGameId, const int gameId,
-               const std::queue<Cell &> &cells) : inGameId(inGameId), gameId(gameId),
+               std::deque<Cell *> *cells) : inGameId(inGameId), gameId(gameId),
                                                   cells(cells), alive(true), remainBenefits(0),
                                                   ServerUser(id, name, username, password, score, sessionId,
                                                              queueId, true) {}
@@ -35,19 +35,19 @@ void Client::setRemainBenefits(int remainBenefits) {
 }
 
 int Client::getLenght() const {
-    return static_cast<int>(cells.size());
+    return static_cast<int>(cells->size());
 }
 
-Cell &Client::getcell(int i) const {
-    return cells[getLenght() - i - 1];
+Cell *Client::getcell(int i) const {
+    return (*cells)[i];
 }
 
-void Client::addCell(const Cell &cell) {
-    cells.push(cell);
+void Client::addCell(Cell *cell) {
+    cells->push_front(cell);
 }
 
 void Client::removeLastCell() {
-    cells.pop();
+    cells->pop_back();
 }
 
 const int Client::getGameId() const {

@@ -27,6 +27,7 @@ std::map<int, int> sessionIdToId;
 std::map<int, ServerUser *> users;
 std::map<int, ServerQueue *> queues;
 std::map<int, ServerGameController *> games;
+
 std::map<int, sf::Thread *> threadId;
 std::map<int, sf::TcpSocket *> socketId;
 
@@ -117,10 +118,6 @@ int createQueue(int size) {
     return idForQueuesAndGames - 1;
 }
 
-void startGame(int queueId) {
-    ServerQueue &queue = *queues[queueId];
-    auto game = new ServerGameController()
-}
 
 void Response(int id) {
 
@@ -236,13 +233,16 @@ void Response(int id) {
         if (resQJoin->success()) {
             users[userId]->setQueueId(reqQJoin.queue_id());
             if (queue->isFull()) {
-                auto game = new ServerGameController();
+                auto game = new ServerGameController(queue->getId());
+                games[game->getId()] = game;
+                // TODO INJASH MOND
+                auto map = game->getMap();
                 for (int i = 0; i < queue->getMAXSIZE(); i++) {
                     int uid = queue->getUser(i).getId();
-                    auto  = new std::vector<Cell &>;
-
-                    auto newClient = new Client(user[uid], queue->getId(), i, );
-                            // TODO malom nist baraye shoroe bazi che gohi bokhoram.
+                    auto newClient = new Client(user[uid], queue->getId(), i, map.placeOfNewClient());
+                    delete users[uid];
+                    users[uid] = newClient;
+                    game->addClient(newClient);
                 }
             }
         }

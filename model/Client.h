@@ -1,5 +1,5 @@
 #include <string>
-#include <queue>
+#include <deque>
 #include "Cell.h"
 #include "Direction.h"
 #include "ServerUser.h"
@@ -10,9 +10,9 @@
 
 class Client : public ServerUser {
 public:
-    Client(ServerUser *serverUser, int gameId, int inGameId, const std::queue<Cell &> &cells);
+    Client(ServerUser *serverUser, int gameId, int inGameId, std::deque<Cell *> *cells);
     Client(int id, std::string &name, std::string &username, std::string &password, int score, int sessionId,
-           int queueId, int inGameId, int gameId, const std::queue<Cell &> &cells);
+           int queueId, int inGameId, int gameId, std::deque<Cell *> *cells);
 
     bool isAlive() const;
 
@@ -24,9 +24,9 @@ public:
 
     int getLenght() const;
 
-    Cell &getcell(int i) const;
+    Cell *getcell(int i) const;
 
-    void addCell(const Cell &cell);
+    void addCell(Cell *cell);
 
     void removeLastCell();
 
@@ -44,7 +44,7 @@ private:
     bool alive;
     int remainBenefits;
 
-    std::queue<Cell &> cells;
+    std::deque<Cell *> *cells;
 };
 
 

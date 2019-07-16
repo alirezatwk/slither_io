@@ -1,10 +1,11 @@
 #include <vector>
 
+#include <SFML/Network.hpp>
 #include "Client.h"
 #include "Map.h"
 #include "Direction.h"
 #include "ServerQueue.h"
-
+#include "../proto/response.pb.h"
 
 #ifndef SLITHER_IO_SERVERGAMECONTROLLER_H
 #define SLITHER_IO_SERVERGAMECONTROLLER_H
@@ -13,13 +14,20 @@
 class ServerGameController {
 
 public:
-    explicit ServerGameController(int id);
+    ServerGameController(int id, std::vector<Client *> &clients);
 
-    void addClient(Client *client);
+    int getId() const;
 
-    void launch();
+    void setId(int id);
 
-    void getClientDir(int clientInGameId, Direction direction);
+    response::GameState getGameState();
+
+    void runCycle();
+
+    bool actionSubmit(int inGameId, Direction direction);
+
+    response::PendingGameCycle getCycleNumber();
+
 
 private:
     int id;
@@ -27,9 +35,14 @@ private:
     Map map;
     int cycleNumber;
 
+    int clientsSaid;
+    int dead; // for scoring
+
     std::vector<Client *> clients;
 
     std::vector<Direction> directions;
+
+
 };
 
 

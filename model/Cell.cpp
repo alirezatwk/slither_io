@@ -1,16 +1,14 @@
 #include "Cell.h"
 
-Cell::Cell(const int x, const int y, const bool wall, int foodBenefit, int clientInGameId,
-           const bool portal, const int portalX = 0, const int portalY = 0) : x(x),
-                                                                              y(y),
-                                                                              wall(wall),
-                                                                              portal(portal),
-                                                                              portalX(portalX),
-                                                                              portalY(portalY),
-                                                                              foodBenefit(
-                                                                                      foodBenefit),
-                                                                              clientInGameId(
-                                                                                      clientInGameId) {}
+Cell::Cell(int x, int y, bool wall, int foodBenefit, int clientInGameId,
+           bool portal, int portalX = 0, int portalY = 0) : x(x),
+                                                            y(y),
+                                                            wall(wall),
+                                                            portal(portal),
+                                                            portalX(portalX),
+                                                            portalY(portalY),
+                                                            foodBenefit(foodBenefit),
+                                                            clientInGameId(clientInGameId) {}
 
 Cell::~Cell() {}
 

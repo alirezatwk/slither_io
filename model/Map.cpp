@@ -27,3 +27,38 @@ void Map::addClientToCell(Client *client, Cell *cell) {
     client->addCell(*cell);
     cell->setClientInGameId(client->getInGameId());
 }
+
+
+std::vector<Cell *> *Map::placeOfNewClient() {
+    int x = rand() % (dimension - 1);
+    int y = rand() % dimension;
+    while(!goodPositionForNew(x, y)){
+        x = rand() % (dimension - 1);
+        y = rand() % dimension;
+    }
+    auto place = new std::vector<Cell *>;
+    (*place).push_back(getCell(x + 1, y));
+    (*place).push_back(getCell(x, y));
+    return place;
+}
+
+Cell *Map::getCell(int x, int y) {
+    return cells[x][y];
+}
+
+bool Map::goodPositionForNew(int x, int y) {
+    Cell *cell = getCell(x, y);
+    if (cell->isWall())
+        return false;
+    if (cell->isPortal())
+        return false;
+    if (cell->getFoodBenefit() != 0)
+        return false;
+    if (cell->getClientInGameId() != -1)
+        return false;
+    return true;
+}
+
+const int Map::getDimension() const {
+    return dimension;
+}

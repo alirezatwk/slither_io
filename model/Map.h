@@ -14,6 +14,15 @@ public:
 
     void addClientToCell(Client *client, Cell *cell);
 
+    std::vector<Cell *> *placeOfNewClient();
+
+    bool goodPositionForNew(int x, int y);
+
+    Cell *getCell(int x, int y);
+
+    const int getDimension() const;
+
+
 
 private:
     const int dimension;

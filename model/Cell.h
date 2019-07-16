@@ -4,8 +4,8 @@
 
 class Cell {
 public:
-    Cell(const int x, const int y, const bool wall, int foodBenefit, int clientInGameId,
-         const bool portal, const int portalX, const int portalY);
+    Cell(int x, int y, bool wall, int foodBenefit, int clientInGameId,
+         bool portal, int portalX, int portalY);
 
     virtual ~Cell();
 
