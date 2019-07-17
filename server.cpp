@@ -119,7 +119,7 @@ int createQueue(int size) {
 }
 
 
-void Response(int id) {
+void GetInput(int id) {
 
     sf::TcpSocket *socket = socketId[id];
 
@@ -133,65 +133,46 @@ void Response(int id) {
     Request req;
     req.ParseFromString(reqStr);
 
-    Response res;
-
-    response::Login resLogin;
-    response::Register resRegister;
-    response::UserInfo resUserInfo;
-    response::Scoreboard resScoreboard;
-    response::QueueCreate resQCreate;
-    response::QueueJoin resQJoin;
-    response::QueueList resQList;
-    response::QueueStatus resQStatus;
-    response::PendingGameCycle resGameCycle;
-    response::GameState resGameState;
-    response::ActionSubmit resAction;
-
-
 
     globalMutex.lock();
 
-    // TODO DELETE NEWS!
-    // Login gets(username, password) give(sessionId) DONE
+    Response res;
+    // Login gets(username, password) give(sessionId)
     if (req.has_login()) { // TODO AGE YEKI LOGIN KARDE BOD DIGE KASI NATONE LOGIN KONE.
         const request::Login &reqLogin = req.login();
-
+        auto resLogin = res.mutable_login();
         if (checkUsernamePassword(reqLogin.username(), reqLogin.password())) {
             int sessionId = makeAndSetSessionId(reqLogin.username());
-            resLogin.set_session_id((uint) sessionId);
+            resLogin->set_session_id((uint) sessionId);
         } else {
-            resLogin.set_session_id(0);
+            resLogin->set_session_id(0);
         }
-        res.set_allocated_login(*resLogin);
     }
 
     // Register gets(name, username, password, confirmPassword) give(success) DONE
     if (req.has_register_()) {
         const request::Register &reqRegister = req.register_();
-        auto resRegister = new response::Register;
+        auto resRegister = res.mutable_register_();
         resRegister->set_success(
                 makeUserInUsers(reqRegister.name(), reqRegister.username(), reqRegister.password(),
                                 reqRegister.confirm_password()));
-        res.set_allocated_register_(resRegister);
     }
 
     // UserInfo gets(sessionId) give(name, score) DONE
     if (req.has_user_info()) {
         const request::UserInfo &reqUserInfo = req.user_info();
-        auto resUserInfo = new response::UserInfo;
-
+        auto resUserInfo = res.mutable_user_info();
         int userId = sessionIdToId[reqUserInfo.session_id()];
         resUserInfo->set_score(static_cast<google::protobuf::uint64>(users[userId]->getScore()));
         resUserInfo->set_name(users[userId]->getName());
-        res.set_allocated_user_info(resUserInfo);
     }
 
     // Scoreboard gets(sessionId) give(score, rank, UserScore top10)
     if (req.has_scoreboard()) {
         const request::Scoreboard &reqScoreboard = req.scoreboard();
-        auto resScoreboard = new response::Scoreboard;
-
+        auto resScoreboard = res.mutable_scoreboard();
         int userId = sessionIdToId[reqScoreboard.session_id()];
+
         int score = users[userId]->getScore();
         resScoreboard->set_user_score(static_cast<google::protobuf::uint64>(score));
 
@@ -218,30 +199,27 @@ void Response(int id) {
             add->set_score(static_cast<google::protobuf::uint64>(-it.first));
             t++;
         }
-        res.set_allocated_scoreboard(resScoreboard);
     }
 
     // QueueCreate gets(sessionId, queueSize) give(idForQueuesAndGames)
     if (req.has_queue_create()) {
         const request::QueueCreate &reqQCreate = req.queue_create();
-        auto resQCreate = new response::QueueCreate;
-
+        auto resQCreate = res.mutable_queue_create();
         int queueId = createQueue(reqQCreate.queue_size());
         int userId = sessionIdToId[reqQCreate.session_id()];
-        queues[queueId]->addUser(*users[userId]); // Is always true
-        resQCreate->set_queue_id(static_cast<google::protobuf::uint64>(idForQueuesAndGames));
-        res.set_allocated_queue_create(resQCreate);
+        queues[queueId]->addUser(users[userId]); // Is always true
+        resQCreate->set_queue_id(static_cast<google::protobuf::uint64>(queueId));
     }
+
+    // ta inja new ha hazf shod
 
     // QueueJoin gets(sessionId, idForQueuesAndGames) give(success)
     if (req.has_queue_join()) {
         const request::QueueJoin &reqQJoin = req.queue_join();
-        auto resQJoin = new response::QueueJoin;
-
+        auto resQJoin = res.mutable_queue_join();
         int userId = sessionIdToId[reqQJoin.session_id()];
         auto queue = queues[reqQJoin.queue_id()];
-
-        resQJoin->set_success(queue->addUser(*users[userId]));
+        resQJoin->set_success(queue->addUser(users[userId]));
         if (resQJoin->success()) {
             users[userId]->setQueueId(reqQJoin.queue_id());
             if (queue->isFull()) {
@@ -344,7 +322,7 @@ int main(int argc, char *argv[]) {
     while (!quit) {
         auto *socket = new sf::TcpSocket;
         listener.accept(*socket);
-        auto *thread = new sf::Thread(&Response, id);
+        auto *thread = new sf::Thread(&GetInput, id);
         socketId[id] = socket;
         threadId[id] = thread;
         thread->launch();
