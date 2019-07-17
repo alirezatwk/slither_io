@@ -17,7 +17,7 @@ public:
 
     virtual ~ServerUser();
 
-    void setScore(int score);
+    void addScore(int score);
 
     void setQueueId(int queueId);
 

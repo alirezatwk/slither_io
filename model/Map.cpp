@@ -10,11 +10,11 @@ Map::Map(int dimension, int maxFood, int prWall) : dimension(dimension), maxFood
             int pr = rand();
             Cell *cell;
             if (pr <= prWall) {
-                cell = new Cell(i, j, true, 0, 0, false, 0, 0);
+                cell = new Cell(i, j, true, 0, -1, false, 0, 0);
                 auto wall = new types::WallBlock;
                 wall.set
             } else {
-                cell = new Cell(i, j, false, 0, 0, false, 0, 0);
+                cell = new Cell(i, j, false, 0, -1, false, 0, 0);
             }
             row.push_back(cell);
         }
@@ -31,7 +31,7 @@ Map::~Map() {
 }
 
 void Map::addClientToCell(Client *client, Cell *cell) {
-    client->addCell(*cell);
+    client->addCell(cell);
     cell->setClientInGameId(client->getInGameId());
 }
 
@@ -72,7 +72,37 @@ const int Map::getDimension() const {
 
 types::Block Map::getCellProto(int x, int y) {
     types::Block ans;
-    ans.set_x(x);
-    ans.set_y(y);
+    ans.set_x(static_cast<google::protobuf::uint32>(x));
+    ans.set_y(static_cast<google::protobuf::uint32>(y));
     return ans;
+}
+
+Cell *Map::getDirectedCell(Cell *currentCell, Direction direction) {
+    int x = currentCell->getX();
+    int y = currentCell->getY();
+    int n = getDimension();
+
+    if (direction == Direction::NONE) {
+        return currentCell;
+    } else if (direction == Direction::UP) {
+        if (x == 0)
+            return nullptr;
+        return getCell(x - 1, y);
+    } else if (direction == Direction::DOWN) {
+        if (x == n - 1)
+            return nullptr;
+        return getCell(x + 1, y);
+    } else if (direction == Direction::RIGHT) {
+        if (y == n - 1)
+            return nullptr;
+        return getCell(x, y + 1);
+    } else if (direction == Direction::LEFT) {
+        if (y == 0)
+            return nullptr;
+        return getCell(x, y - 1);
+    }
+}
+
+void Map::hearse(Client *client) {
+
 }

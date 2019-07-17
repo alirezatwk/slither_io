@@ -20,11 +20,14 @@ public:
     bool goodPositionForNew(int x, int y);
 
     Cell *getCell(int x, int y);
-    types::Block *getCellProto(int x, int y);
+
+    types::Block getCellProto(int x, int y);
+
+    Cell *getDirectedCell(Cell *currentCell, Direction direction);
 
     const int getDimension() const;
 
-
+    void hearse(Client *client);
 
 private:
     const int dimension;
@@ -34,7 +37,6 @@ private:
 
     int food;
     std::vector<std::vector<Cell *> > cells;
-    std::vector<types::WallBlock *> wallCells;
 };
 
 

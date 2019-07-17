@@ -1,13 +1,13 @@
 #ifndef SLITHER_IO_DIRECTION_H
 #define SLITHER_IO_DIRECTION_H
 
-enum class Direction {
-    LEFT,
+enum Direction {
     UP,
     RIGHT,
     DOWN,
+    LEFT,
     NONE,
 };
 
-#endif //SLITHER_IO_DIRECTION_H
 
+#endif //SLITHER_IO_DIRECTION_H

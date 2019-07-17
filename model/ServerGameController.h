@@ -32,6 +32,10 @@ public:
 
     void makePlayerBlockFromCell(types::PlayerBlock *playerBlock, Cell *cell);
 
+    std::vector<Client *> clientsGoesInCell(Cell *cell);
+
+    void move(Client *client);
+
 private:
     int id;
 
@@ -39,7 +43,7 @@ private:
     int cycleNumber;
 
     int clientsSaid;
-    int dead; // for scoring
+    int numberOfDeads; // for scoring
 
     std::vector<Client *> clients;
 

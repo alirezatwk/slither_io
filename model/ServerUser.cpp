@@ -14,8 +14,8 @@ ServerUser::ServerUser(int id, const std::string &name, const std::string &usern
                                                                              sessionId(sessionId), queueId(queueId),
                                                                              inGame(inGame) {}
 
-void ServerUser::setScore(int score) {
-    ServerUser::score = score;
+void ServerUser::addScore(int score) {
+    ServerUser::score += score;
 }
 
 void ServerUser::setQueueId(int queueId) {
