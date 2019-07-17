@@ -273,7 +273,7 @@ void GetInput(int id) {
     // PendingGameCycle gets(sessionId)
     if (req.has_pending_game_cycle()) {
         int userId = sessionIdToId[req.pending_game_cycle().session_id()];
-        ServerUser &user = users[userId];
+        ServerUser &user = *users[userId];
         if (user.isInGame()) {
             auto client = dynamic_cast<Client *>(&user);
             int gameId = client->getGameId();

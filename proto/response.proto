@@ -55,4 +55,3 @@ message GameState {
 message ActionSubmit {
     bool success = 1;
 }
-

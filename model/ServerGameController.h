@@ -14,20 +14,23 @@
 class ServerGameController {
 
 public:
-    ServerGameController(int id, std::vector<Client *> &clients);
+    ServerGameController(int id, std::vector<Client *> &clientsArg);
 
     int getId() const;
 
     void setId(int id);
 
-    response::GameState getGameState();
+    void getGameState(response::GameState *gameState);
 
     void runCycle();
 
     bool actionSubmit(int inGameId, Direction direction);
 
-    response::PendingGameCycle getCycleNumber();
+    void getCycleNumber(response::PendingGameCycle *pendingGameCycle);
 
+    void makePlayerFromClient(types::Player *player, Client *client);
+
+    void makePlayerBlockFromCell(types::PlayerBlock *playerBlock, Cell *cell);
 
 private:
     int id;
