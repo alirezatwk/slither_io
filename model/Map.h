@@ -1,6 +1,7 @@
 #include <vector>
 #include "Cell.h"
 #include "Client.h"
+#include "../proto/types.pb.h"
 
 #ifndef SLITHER_IO_MAP_H
 #define SLITHER_IO_MAP_H
@@ -19,6 +20,7 @@ public:
     bool goodPositionForNew(int x, int y);
 
     Cell *getCell(int x, int y);
+    types::Block *getCellProto(int x, int y);
 
     const int getDimension() const;
 
@@ -32,6 +34,7 @@ private:
 
     int food;
     std::vector<std::vector<Cell *> > cells;
+    std::vector<types::WallBlock *> wallCells;
 };
 
 

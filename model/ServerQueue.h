@@ -17,9 +17,9 @@ public:
 
     const int getMAXSIZE() const;
 
-    ServerUser &getUser(int index) const;
+    ServerUser *getUser(int index) const;
 
-    bool addUser(ServerUser &user);
+    bool addUser(ServerUser *user);
 
     bool isFull() const;
 
@@ -28,7 +28,7 @@ private:
     const int MAXSIZE;
 
     int size;
-    std::vector<ServerUser &> users;
+    std::vector<ServerUser *> users;
 };
 
 

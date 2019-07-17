@@ -7,9 +7,9 @@
 
 #include <SFML/Network.hpp>
 #include "proto/communication.pb.h"
+#include "proto/types.pb.h"
 #include "proto/database.pb.h"
 #include "proto/response.pb.h"
-#include "proto/types.pb.h"
 #include "proto/request.pb.h"
 
 #include "model/Client.h"
@@ -133,9 +133,21 @@ void Response(int id) {
     Request req;
     req.ParseFromString(reqStr);
 
+    Response res;
 
-    Response
-    res;
+    response::Login resLogin;
+    response::Register resRegister;
+    response::UserInfo resUserInfo;
+    response::Scoreboard resScoreboard;
+    response::QueueCreate resQCreate;
+    response::QueueJoin resQJoin;
+    response::QueueList resQList;
+    response::QueueStatus resQStatus;
+    response::PendingGameCycle resGameCycle;
+    response::GameState resGameState;
+    response::ActionSubmit resAction;
+
+
 
     globalMutex.lock();
 
@@ -143,14 +155,14 @@ void Response(int id) {
     // Login gets(username, password) give(sessionId) DONE
     if (req.has_login()) { // TODO AGE YEKI LOGIN KARDE BOD DIGE KASI NATONE LOGIN KONE.
         const request::Login &reqLogin = req.login();
-        auto resLogin = new response::Login;
+
         if (checkUsernamePassword(reqLogin.username(), reqLogin.password())) {
             int sessionId = makeAndSetSessionId(reqLogin.username());
-            resLogin->set_session_id((uint) sessionId);
+            resLogin.set_session_id((uint) sessionId);
         } else {
-            resLogin->set_session_id(0);
+            resLogin.set_session_id(0);
         }
-        res.set_allocated_login(resLogin);
+        res.set_allocated_login(*resLogin);
     }
 
     // Register gets(name, username, password, confirmPassword) give(success) DONE

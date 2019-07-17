@@ -20,7 +20,7 @@ const int ServerQueue::getMAXSIZE() const {
     return MAXSIZE;
 }
 
-ServerUser &ServerQueue::getUser(int index) const {
+ServerUser *ServerQueue::getUser(int index) const {
     return users[index];
 }
 
@@ -28,11 +28,11 @@ bool ServerQueue::isFull() const {
     return size == MAXSIZE;
 }
 
-bool ServerQueue::addUser(ServerUser &user) {
+bool ServerQueue::addUser(ServerUser *user) {
     if (isFull())
         return false;
     users.push_back(user);
-    setSize(static_cast<int>(users.size()))
+    setSize(static_cast<int>(users.size()));
     return true;
 }
 

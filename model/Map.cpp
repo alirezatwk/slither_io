@@ -8,7 +8,14 @@ Map::Map(int dimension, int maxFood, int prWall) : dimension(dimension), maxFood
         std::vector<Cell &> row;
         for (int j = 0; j < dimension; j++) {
             int pr = rand();
-            Cell *cell = new Cell(i, j, pr <= prWall, 0, 0, false, 0, 0);
+            Cell *cell;
+            if (pr <= prWall) {
+                cell = new Cell(i, j, true, 0, 0, false, 0, 0);
+                auto wall = new types::WallBlock;
+                wall.set
+            } else {
+                cell = new Cell(i, j, false, 0, 0, false, 0, 0);
+            }
             row.push_back(cell);
         }
         cells.push_back(row);
@@ -32,7 +39,7 @@ void Map::addClientToCell(Client *client, Cell *cell) {
 std::vector<Cell *> *Map::placeOfNewClient() {
     int x = rand() % (dimension - 1);
     int y = rand() % dimension;
-    while(!goodPositionForNew(x, y)){
+    while (!goodPositionForNew(x, y)) {
         x = rand() % (dimension - 1);
         y = rand() % dimension;
     }
@@ -61,4 +68,11 @@ bool Map::goodPositionForNew(int x, int y) {
 
 const int Map::getDimension() const {
     return dimension;
+}
+
+types::Block Map::getCellProto(int x, int y) {
+    types::Block ans;
+    ans.set_x(x);
+    ans.set_y(y);
+    return ans;
 }

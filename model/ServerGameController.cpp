@@ -42,17 +42,15 @@ response::GameState ServerGameController::getGameState() {
     // TODO ans.add_portal();
     for (int i = 0; i < map.getDimension(); i++) {
         for (int j = 0; j < map.getDimension(); j++) {
-            Cell *cell = map.getCell(i, j);
-            auto block = new types::Block;
-            block->set_x(static_cast<google::protobuf::uint32>(i));
-            block->set_y(static_cast<google::protobuf::uint32>(j));
+            auto cell = map.getCell(i, j);
+            auto block = map.getCellProto(i, j);
 
             if (cell->isWall()) {
                 auto wall = ans.add_walls();
                 wall->set_allocated_position(block);
             } else if (cell->getFoodBenefit() != 0) {
                 auto food = ans.add_foods();
-                food->set_allocated_position(block);
+                food->set_allocated_position(&block);
                 food->set_benefit(static_cast<google::protobuf::uint32>(cell->getFoodBenefit()));
             }
         }
