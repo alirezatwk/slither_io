@@ -18,7 +18,6 @@
 #include "model/ServerGameController.h"
 
 const unsigned short PORT = 5000;
-const std::string IPADDRESS("127.0.0.1");
 const std::string DATABASE("database.txt");
 const int NORMALQUEUESIZE = 6;
 
@@ -64,6 +63,7 @@ int generateSessionId() {
         ans = rand();
     return ans;
 } // False sessionId is 0.
+// TODO DON'T GENERATE TEKRARI SESSIONID
 
 std::string hashFunction(std::string password) {
 
@@ -212,8 +212,6 @@ void GetInput(int id) {
         resQCreate->set_queue_id(static_cast<google::protobuf::uint64>(queueId));
     }
 
-    // ta inja new ha hazf shod
-
     // QueueJoin gets(sessionId, idForQueuesAndGames) give(success)
     if (req.has_queue_join()) {
         const request::QueueJoin &reqQJoin = req.queue_join();
@@ -229,18 +227,19 @@ void GetInput(int id) {
         if (added) {
             users[userId]->setQueueId(queueId);
             if (queue->isFull()) {
-                // TODO INJASH MOND
+                auto game = new ServerGameController(queueId);
+                games[queueId] = game;
                 for (int i = 0; i < queue->getMAXSIZE(); i++) {
                     auto user = queue->getUser(i);
-
-                    auto newClient = new Client(user, queueId, i, );
-                    delete users[uid];
-                    users[uid] = newClient;
-                    game->addClient(newClient);
+                    auto newClient = game->addClient(user);
+                    delete user;
+                    users[newClient->getId()] = newClient;
                 }
-                auto game = new ServerGameController(queueId, );
-                games[game->getId()] = game;
-                auto map = game->getMap();
+                queues.erase(queueId);
+                delete queue;
+                if (queues.empty()) {
+                    createQueue(NORMALQUEUESIZE);
+                }
             }
         }
     }
@@ -248,7 +247,7 @@ void GetInput(int id) {
     // QueueList gets(sessionId) give(repeated QueueItem) -> QueueItem = id, occupied, size
     if (req.has_queue_list()) {
         const request::QueueList &reqQList = req.queue_list();
-        auto resQList = new response::QueueList;
+        auto resQList = res.mutable_queue_list();
         for (auto it : queues) {
             auto add = resQList->add_queue_items();
             add->set_id(static_cast<google::protobuf::uint64>(it.second->getId()));
@@ -260,51 +259,71 @@ void GetInput(int id) {
     // QueueStatus gets(sessionId) [if in a queue] give(repeated playerNames[string], size, initialized)
     if (req.has_queue_status()) {
         const request::QueueStatus &reqQStatus = req.queue_status();
-        auto resQStatus = new response::QueueStatus;
+        auto resQStatus = res.mutable_queue_status();
         int userId = sessionIdToId[reqQStatus.session_id()];
-        if (users[userId].getQueueId() != 0) {
-            int queueId = users[userId].getQueueId();
+        int queueId = users[userId]->getQueueId();
+
+        if (queueId != 0) {
             for (int i = 0; i < queues[queueId]->getSize(); i++) {
                 auto add = resQStatus->add_player_names();
-                add->assign(queues[queueId]->getUser(i).getName());
+                add->assign(queues[queueId]->getUser(i)->getName());
             }
             resQStatus->set_size(static_cast<google::protobuf::uint32>(queues[queueId]->getMAXSIZE()));
-            resQStatus->set_initialized();//TODO NEMIDONAM!
+            resQStatus->set_initialized(queues[queueId]->isFull());
         } else {
             resQStatus->set_size(0);
-            resQStatus->set_initialized();// TODO initialized yani chi? :))
+            resQStatus->set_initialized(false);
         }
-        res.set_allocated_queue_status(resQStatus);
     }
 
-    // PendingGameCycle gets(sessionId)
+    // PendingGameCycle gets(sessionId) give(cycleNumber)
     if (req.has_pending_game_cycle()) {
         int userId = sessionIdToId[req.pending_game_cycle().session_id()];
+        auto resPending = res.mutable_pending_game_cycle();
         ServerUser &user = *users[userId];
         if (user.isInGame()) {
             auto client = dynamic_cast<Client *>(&user);
             int gameId = client->getGameId();
-            ServerGameController
+            games[gameId]->getCycleNumber(resPending);
+        } else {
+            resPending->set_cycle_number(0);
         }
     }
 
-
     // GameState gets(sessionId)
+    if (req.has_game_state()) {
+        const request::GameState &reqGameState = req.game_state();
+        auto resGameState = res.mutable_game_state();
+        int userId = sessionIdToId[reqGameState.session_id()];
+        auto client = dynamic_cast<Client *>(users[userId]);
+        if (client != nullptr) {
+            games[client->getGameId()]->getGameState(resGameState);
+        }
+    }
+
     // ActionSubmit gets(sessionId, Action)
+    if (req.has_action_submit()) {
+        const request::ActionSubmit &reqActionSubmit = req.action_submit();
+        auto resActionSubmit = res.mutable_action_submit();
+        int userId = sessionIdToId[reqActionSubmit.session_id()];
+        auto client = dynamic_cast<Client *>(users[userId]);
+        if (client != nullptr) {
+            games[client->getGameId()]->actionSubmit(client->getInGameId(),
+                                                     static_cast<Direction>(reqActionSubmit.action()));
+            resActionSubmit->set_success(true);
+        } else {
+            resActionSubmit->set_success(false);
+        }
+    }
+
     sf::Packet packetSend;
 
-
     std::stringstream stream;
-    msg.SerializeToOstream(&stream);
-
+    res.SerializeToOstream(&stream);
     packetSend << stream.str();
-
-
     socket->send(packetSend);
 
     globalMutex.unlock();
-
-
 
     // Ba farze inke beshe hamaro delete kard.
     delete socketId[id];
@@ -316,7 +335,7 @@ void GetInput(int id) {
 
 int main(int argc, char *argv[]) {
 
-    srand(time(0));
+    srand(static_cast<unsigned int>(time(0)));
 
     importDatabase();
     createQueue(NORMALQUEUESIZE);

@@ -6,7 +6,8 @@ ServerUser::ServerUser(ServerUser *serverUser) : id(serverUser->getId()), name(s
                                                  password(serverUser->getPassword()),
                                                  sessionId(serverUser->getSessionId()),
                                                  queueId(serverUser->getQueueId()),
-                                                 inGame(serverUser->isInGame()) {}
+                                                 inGame(true) {} // because we make new user with pointer
+// only for clients.
 
 ServerUser::ServerUser(int id, const std::string &name, const std::string &username, const std::string &password,
                        int score, int sessionId, int queueId, bool inGame) : id(id), name(name), username(username),
