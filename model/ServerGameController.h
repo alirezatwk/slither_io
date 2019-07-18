@@ -36,6 +36,8 @@ public:
 
     void move(Client *client);
 
+    bool isEmpty(Cell *cell);
+
 private:
     int id;
 

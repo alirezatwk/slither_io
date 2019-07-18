@@ -104,5 +104,9 @@ Cell *Map::getDirectedCell(Cell *currentCell, Direction direction) {
 }
 
 void Map::hearse(Client *client) {
+    // TODO JAM KONE MELATO
+}
 
+void Map::removeClientLastCell(Client *client) {
+    // TODO VAR DARE AKHARIE RO.
 }

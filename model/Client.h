@@ -22,9 +22,9 @@ public:
 
     void setRemainBenefits(int remainBenefits);
 
-    int getLenght() const;
+    int getLength() const;
 
-    Cell *getcell(int i) const;
+    Cell *getCell(int i) const;
 
     void addCell(Cell *cell);
 

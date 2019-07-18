@@ -14,6 +14,7 @@ public:
     virtual ~Map();
 
     void addClientToCell(Client *client, Cell *cell);
+    void removeClientLastCell(Client *client);
 
     std::vector<Cell *> *placeOfNewClient();
 

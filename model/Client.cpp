@@ -34,11 +34,11 @@ void Client::setRemainBenefits(int remainBenefits) {
     Client::remainBenefits = remainBenefits;
 }
 
-int Client::getLenght() const {
+int Client::getLength() const {
     return static_cast<int>(cells->size());
 }
 
-Cell *Client::getcell(int i) const {
+Cell *Client::getCell(int i) const {
     return (*cells)[i];
 }
 
