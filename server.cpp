@@ -66,6 +66,7 @@ int generateSessionId() {
 } // False sessionId is 0.
 
 std::string hashFunction(std::string password) {
+
     return password;
 } // TODO
 
@@ -217,23 +218,29 @@ void GetInput(int id) {
     if (req.has_queue_join()) {
         const request::QueueJoin &reqQJoin = req.queue_join();
         auto resQJoin = res.mutable_queue_join();
+
         int userId = sessionIdToId[reqQJoin.session_id()];
-        auto queue = queues[reqQJoin.queue_id()];
-        resQJoin->set_success(queue->addUser(users[userId]));
-        if (resQJoin->success()) {
-            users[userId]->setQueueId(reqQJoin.queue_id());
+        int queueId = reqQJoin.queue_id();
+        auto queue = queues[queueId];
+
+        bool added = queue->addUser(users[userId]);
+
+        resQJoin->set_success(added);
+        if (added) {
+            users[userId]->setQueueId(queueId);
             if (queue->isFull()) {
-                auto game = new ServerGameController(queue->getId());
-                games[game->getId()] = game;
                 // TODO INJASH MOND
-                auto map = game->getMap();
                 for (int i = 0; i < queue->getMAXSIZE(); i++) {
-                    int uid = queue->getUser(i).getId();
-                    auto newClient = new Client(user[uid], queue->getId(), i, map.placeOfNewClient());
+                    auto user = queue->getUser(i);
+
+                    auto newClient = new Client(user, queueId, i, );
                     delete users[uid];
                     users[uid] = newClient;
                     game->addClient(newClient);
                 }
+                auto game = new ServerGameController(queueId, );
+                games[game->getId()] = game;
+                auto map = game->getMap();
             }
         }
     }

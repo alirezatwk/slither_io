@@ -2,17 +2,15 @@
 #include "Map.h"
 
 
-Map::Map(int dimension, int maxFood, int prWall) : dimension(dimension), maxFood(maxFood), prWall(prWall) {
+Map::Map(int dimension, int maxFood, int prWall) : dimension(dimension), maxFood(maxFood), prWall(prWall), food(0) {
     srand(static_cast<unsigned int>(time(nullptr)));
     for (int i = 0; i < dimension; i++) {
-        std::vector<Cell &> row;
+        std::vector<Cell *> row;
         for (int j = 0; j < dimension; j++) {
             int pr = rand();
             Cell *cell;
             if (pr <= prWall) {
                 cell = new Cell(i, j, true, 0, -1, false, 0, 0);
-                auto wall = new types::WallBlock;
-                wall.set
             } else {
                 cell = new Cell(i, j, false, 0, -1, false, 0, 0);
             }
@@ -36,17 +34,17 @@ void Map::addClientToCell(Client *client, Cell *cell) {
 }
 
 
-std::vector<Cell *> *Map::placeOfNewClient() {
+std::vector<Cell *> Map::placeOfNewClient() {
     int x = rand() % (dimension - 1);
     int y = rand() % dimension;
-    while (!goodPositionForNew(x, y)) {
+    while (!goodPositionForNew(x, y) || !goodPositionForNew(x + 1, y)) {
         x = rand() % (dimension - 1);
         y = rand() % dimension;
     }
-    auto place = new std::vector<Cell *>;
-    (*place).push_back(getCell(x + 1, y));
-    (*place).push_back(getCell(x, y));
-    return place;
+    std::vector<Cell *> ans;
+    ans.push_back(getCell(x + 1, y));
+    ans.push_back(getCell(x, y));
+    return ans;
 }
 
 Cell *Map::getCell(int x, int y) {
@@ -68,13 +66,6 @@ bool Map::goodPositionForNew(int x, int y) {
 
 const int Map::getDimension() const {
     return dimension;
-}
-
-types::Block Map::getCellProto(int x, int y) {
-    types::Block ans;
-    ans.set_x(static_cast<google::protobuf::uint32>(x));
-    ans.set_y(static_cast<google::protobuf::uint32>(y));
-    return ans;
 }
 
 Cell *Map::getDirectedCell(Cell *currentCell, Direction direction) {
@@ -104,9 +95,13 @@ Cell *Map::getDirectedCell(Cell *currentCell, Direction direction) {
 }
 
 void Map::hearse(Client *client) {
-    // TODO JAM KONE MELATO
+    for (int i = 0; i < client->getLength(); i++) {
+        auto cell = client->getCell(i);
+        cell->setClientInGameId(-1);
+    }
 }
 
 void Map::removeClientLastCell(Client *client) {
-    // TODO VAR DARE AKHARIE RO.
+    auto cell = client->getCell(client->getLength() - 1);
+    cell->setClientInGameId(-1);
 }

@@ -14,15 +14,14 @@ public:
     virtual ~Map();
 
     void addClientToCell(Client *client, Cell *cell);
+
     void removeClientLastCell(Client *client);
 
-    std::vector<Cell *> *placeOfNewClient();
+    std::vector<Cell *> placeOfNewClient();
 
     bool goodPositionForNew(int x, int y);
 
     Cell *getCell(int x, int y);
-
-    types::Block getCellProto(int x, int y);
 
     Cell *getDirectedCell(Cell *currentCell, Direction direction);
 
