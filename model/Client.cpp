@@ -1,20 +1,17 @@
-//
-// Created by tavak on 7/9/19.
-//
-
+#include <utility>
 #include "Client.h"
 
 
 Client::Client(ServerUser *serverUser, int gameId, int inGameId,
-               std::deque<Cell *> *cells) : ServerUser(serverUser),
+               std::deque<Cell *> cells) : ServerUser(serverUser),
                                             inGameId(inGameId),
                                             gameId(gameId),
-                                            cells(cells) {}
+                                            cells(std::move(cells)) {}
 
 Client::Client(int id, std::string &name, std::string &username, std::string &password, int score, int sessionId,
                int queueId, const int inGameId, const int gameId,
-               std::deque<Cell *> *cells) : inGameId(inGameId), gameId(gameId),
-                                                  cells(cells), alive(true), remainBenefits(0),
+               std::deque<Cell *> cells) : inGameId(inGameId), gameId(gameId),
+                                                  cells(std::move(cells)), alive(true), remainBenefits(0),
                                                   ServerUser(id, name, username, password, score, sessionId,
                                                              queueId, true) {}
 
@@ -35,19 +32,19 @@ void Client::setRemainBenefits(int remainBenefits) {
 }
 
 int Client::getLength() const {
-    return static_cast<int>(cells->size());
+    return static_cast<int>(cells.size());
 }
 
 Cell *Client::getCell(int i) const {
-    return (*cells)[i];
+    return cells[i];
 }
 
 void Client::addCell(Cell *cell) {
-    cells->push_front(cell);
+    cells.push_front(cell);
 }
 
 void Client::removeLastCell() {
-    cells->pop_back();
+    cells.pop_back();
 }
 
 const int Client::getGameId() const {

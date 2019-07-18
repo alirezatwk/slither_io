@@ -14,7 +14,9 @@
 class ServerGameController {
 
 public:
-    ServerGameController(int id, std::vector<Client *> &clientsArg);
+    ServerGameController(int id);
+
+    Client *addClient(ServerUser *serverUser);
 
     int getId() const;
 

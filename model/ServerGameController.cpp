@@ -1,16 +1,12 @@
+#include <deque>
 #include "ServerGameController.h"
 
 
-ServerGameController::ServerGameController(int id, std::vector<Client *> &clientsArg) : id(id),
-                                                                                        cycleNumber(1),
-                                                                                        map(15, 8, 1000),
-                                                                                        clientsSaid(0),
-                                                                                        numberOfDeads(0) {
-    for (auto client : clientsArg) {
-        clients.push_back(client);
-        directions.push_back(Direction::NONE);
-    }
-}
+ServerGameController::ServerGameController(int id) : id(id),
+                                                     cycleNumber(1),
+                                                     map(15, 8, 1000),
+                                                     clientsSaid(0),
+                                                     numberOfDeads(0) {}
 
 int ServerGameController::getId() const {
     return id;
@@ -193,7 +189,7 @@ void ServerGameController::move(Client *client) {
     map.addClientToCell(client, map.getDirectedCell(currentCell, directions[id]));
 
     int remain = client->getRemainBenefits();
-    if(1 <= remain){
+    if (1 <= remain) {
         client->setRemainBenefits(remain - 1);
     } else {
         map.removeClientLastCell(client);
@@ -204,15 +200,24 @@ bool ServerGameController::isEmpty(Cell *cell) {
     if (cell->isWall()) {
         return false;
     }
-    if (cell->getClientInGameId() == -1){
+    if (cell->getClientInGameId() == -1) {
         return true;
     }
     int id = cell->getClientInGameId();
     int length = clients[id]->getLength();
     Cell *lastCellClient = clients[id]->getCell(length - 1);
-    if(lastCellClient == cell && clients[id]->getRemainBenefits() == 0){
+    if (lastCellClient == cell && clients[id]->getRemainBenefits() == 0) {
         return true;
     }
     return false;
+}
+
+Client *ServerGameController::addClient(ServerUser *serverUser) {
+    auto inGameId = static_cast<int>(clients.size());
+    std::deque<Cell *> place = map.placeOfNewClient(inGameId);
+    auto client = new Client(serverUser, id, inGameId, place);
+    clients.push_back(client);
+    directions.push_back(Direction::NONE);
+    return client;
 }
 

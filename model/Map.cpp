@@ -34,16 +34,18 @@ void Map::addClientToCell(Client *client, Cell *cell) {
 }
 
 
-std::vector<Cell *> Map::placeOfNewClient() {
+std::deque<Cell *> Map::placeOfNewClient(int inGameId) {
     int x = rand() % (dimension - 1);
     int y = rand() % dimension;
     while (!goodPositionForNew(x, y) || !goodPositionForNew(x + 1, y)) {
         x = rand() % (dimension - 1);
         y = rand() % dimension;
     }
-    std::vector<Cell *> ans;
-    ans.push_back(getCell(x + 1, y));
-    ans.push_back(getCell(x, y));
+    std::deque<Cell *> ans;
+    ans.push_front(getCell(x + 1, y));
+    getCell(x + 1, y)->setClientInGameId(inGameId);
+    ans.push_front(getCell(x, y));
+    getCell(x, y)->setClientInGameId(inGameId);
     return ans;
 }
 

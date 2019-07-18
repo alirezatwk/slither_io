@@ -1,4 +1,6 @@
 #include <vector>
+#include <deque>
+
 #include "Cell.h"
 #include "Client.h"
 #include "../proto/types.pb.h"
@@ -17,7 +19,7 @@ public:
 
     void removeClientLastCell(Client *client);
 
-    std::vector<Cell *> placeOfNewClient();
+    std::deque<Cell *> placeOfNewClient(int inGameId);
 
     bool goodPositionForNew(int x, int y);
 
