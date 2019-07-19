@@ -14,7 +14,7 @@
 class ServerGameController {
 
 public:
-    ServerGameController(int id);
+    explicit ServerGameController(int id);
 
     Client *addClient(ServerUser *serverUser);
 

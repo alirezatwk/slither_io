@@ -335,7 +335,10 @@ void GetInput(int id) {
 
 int main(int argc, char *argv[]) {
 
+    // TODO OK KON RANDOM HA RO.
     srand(static_cast<unsigned int>(time(0)));
+
+    // TODO BEBIN KODOMA TO PROTOBUF SIZE HASHON CHIAN, TAGHIR BEDESHON.
 
     importDatabase();
     createQueue(NORMALQUEUESIZE);
@@ -354,5 +357,6 @@ int main(int argc, char *argv[]) {
         thread->launch();
     }
 
+    // TODO ENDS EXPORT DATABASE.
     return 0;
 }

@@ -53,7 +53,8 @@ void ServerGameController::getGameState(response::GameState *gameState) {
 }
 
 void ServerGameController::runCycle() {
-
+    // TODO FOODS
+    // TODO PORTALS
     std::vector<Client *> deads;
 
     for (int i = 0; i < map.getDimension(); i++) {
@@ -140,7 +141,7 @@ void ServerGameController::runCycle() {
             move(client);
         }
     }
-
+    // TODO directions -> NONE
 }
 
 bool ServerGameController::actionSubmit(int inGameId, Direction direction) {
@@ -193,6 +194,7 @@ void ServerGameController::move(Client *client) {
         client->setRemainBenefits(remain - 1);
     } else {
         map.removeClientLastCell(client);
+        client->removeLastCell();
     }
 }
 
