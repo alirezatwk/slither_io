@@ -18,6 +18,7 @@
 #include "model/ServerGameController.h"
 
 const unsigned short PORT = 5000;
+sf::TcpListener listener;
 const std::string DATABASE("database.txt");
 const int NORMALQUEUESIZE = 6;
 
@@ -57,24 +58,63 @@ void importDatabase() {
     fIn.close();
 }
 
+void exportDatabase() {
+    std::ofstream fOut;
+    fOut.open(DATABASE);
+
+    for (auto it : users) {
+        ServerUser &serverUser = *it.second;
+        database::User user;
+        user.set_id(static_cast<google::protobuf::uint64>(serverUser.getId()));
+        user.set_username(serverUser.getUsername());
+        user.set_password(serverUser.getPassword());
+        user.set_name(serverUser.getName());
+        user.set_session_id(0);
+        user.set_queue_id(0);
+        user.set_game_id(0);
+        std::string userStr;
+        user.SerializeToString(&userStr);
+        fOut << userStr << '\n';
+    }
+    for (auto it : users) {
+        delete it.second;
+    }
+
+    fOut.close();
+}
+
 int generateSessionId() {
     int ans = 0;
-    while (ans == 0)
+    while (ans == 0 || sessionIdToId.find(ans) != sessionIdToId.end())
         ans = rand();
     return ans;
 } // False sessionId is 0.
-// TODO DON'T GENERATE TEKRARI SESSIONID
+
+
+const int C = 313;
+const int MOD = 1LL * 1000 * 1000 * 1000 + 7;
 
 std::string hashFunction(std::string password) {
-
-    return password;
-} // TODO
+    long long ans = 0, t = 1;
+    for (char c : password) {
+        ans += (t * c) % MOD;
+        ans %= MOD;
+        t *= C;
+        t %= MOD;
+    }
+    std::string hashPassword;
+    while (ans) {
+        hashPassword += static_cast<char>(static_cast<int>('0') + (ans % 10));
+        ans /= 10;
+    }
+    return hashPassword;
+}
 
 bool checkUsernamePassword(const std::string &username, const std::string &password) {
     const std::string &hashPassword = hashFunction(password);
     for (auto it : users) {
         const ServerUser &user = (*it.second);
-        if (username == user.getUsername() && hashPassword == user.getPassword()) {
+        if (username == user.getUsername() && hashPassword == user.getPassword() && !user.isLogin()) {
             return true;
         }
     }
@@ -86,6 +126,7 @@ int makeAndSetSessionId(const std::string &username) {
         auto &user = (*it.second);
         if (user.getUsername() == username) {
             user.setSessionId(generateSessionId());
+            user.setLogin(true);
             sessionIdToId[user.getSessionId()] = user.getId();
             return user.getSessionId();
         }
@@ -139,7 +180,7 @@ void GetInput(int id) {
 
     Response res;
     // Login gets(username, password) give(sessionId)
-    if (req.has_login()) { // TODO AGE YEKI LOGIN KARDE BOD DIGE KASI NATONE LOGIN KONE.
+    if (req.has_login()) {
         const request::Login &reqLogin = req.login();
         auto resLogin = res.mutable_login();
         if (checkUsernamePassword(reqLogin.username(), reqLogin.password())) {
@@ -333,20 +374,7 @@ void GetInput(int id) {
     delete tmp;
 }
 
-int main(int argc, char *argv[]) {
-
-    // TODO OK KON RANDOM HA RO.
-    srand(static_cast<unsigned int>(time(0)));
-
-    // TODO BEBIN KODOMA TO PROTOBUF SIZE HASHON CHIAN, TAGHIR BEDESHON.
-
-    importDatabase();
-    createQueue(NORMALQUEUESIZE);
-
-
-    sf::TcpListener listener;
-    listener.listen(PORT);
-
+void ClientHandler() {
     int id = 0;
     while (!quit) {
         auto *socket = new sf::TcpSocket;
@@ -356,7 +384,34 @@ int main(int argc, char *argv[]) {
         threadId[id] = thread;
         thread->launch();
     }
+}
 
-    // TODO ENDS EXPORT DATABASE.
+int main(int argc, char *argv[]) {
+
+    // TODO OK KON RANDOM HA RO.
+    srand(static_cast<unsigned int>(time(0)));
+
+    // TODO BEBIN KODOMA TO PROTOBUF SIZE HASHON CHIAN, TAGHIR BEDESHON.
+    // TODO END OF GAME.
+
+    importDatabase();
+    createQueue(NORMALQUEUESIZE);
+
+    listener.listen(PORT);
+    auto thread = new sf::Thread(&ClientHandler);
+    thread->launch();
+
+    std::string temp;
+    std::cin >> temp;
+    delete thread;
+
+    exportDatabase();
+
+    for(auto it : queues){
+        delete it.second;
+    }
+    for(auto it : games){
+        delete it.second;
+    }
     return 0;
 }

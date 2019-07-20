@@ -1,3 +1,9 @@
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 #include "ServerUser.h"
 
 
@@ -6,14 +12,17 @@ ServerUser::ServerUser(ServerUser *serverUser) : id(serverUser->getId()), name(s
                                                  password(serverUser->getPassword()),
                                                  sessionId(serverUser->getSessionId()),
                                                  queueId(serverUser->getQueueId()),
-                                                 inGame(true) {} // because we make new user with pointer
+                                                 inGame(true),
+                                                 login(true) {} // because we make new user with pointer
 // only for clients.
 
-ServerUser::ServerUser(int id, const std::string &name, const std::string &username, const std::string &password,
-                       int score, int sessionId, int queueId, bool inGame) : id(id), name(name), username(username),
-                                                                             password(password), score(score),
+ServerUser::ServerUser(int id, std::string name, std::string username, std::string password,
+                       int score, int sessionId, int queueId, bool inGame) : id(id), name(std::move(name)), username(
+        std::move(username)),
+                                                                             password(std::move(password)),
+                                                                             score(score),
                                                                              sessionId(sessionId), queueId(queueId),
-                                                                             inGame(inGame) {}
+                                                                             inGame(inGame), login(false) {}
 
 void ServerUser::addScore(int score) {
     ServerUser::score += score;
@@ -65,4 +74,12 @@ void ServerUser::setInGame(bool inGame) {
 
 ServerUser::~ServerUser() {
 
+}
+
+bool ServerUser::isLogin() const {
+    return login;
+}
+
+void ServerUser::setLogin(bool login) {
+    ServerUser::login = login;
 }

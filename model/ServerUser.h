@@ -41,6 +41,10 @@ public:
 
     void setInGame(bool inGame);
 
+    bool isLogin() const;
+
+    void setLogin(bool login);
+
 private:
     const int id;
 
@@ -49,13 +53,14 @@ private:
     const std::string username;
     const std::string password;
 
+    bool login;
+
     int score;
 
     int sessionId;
     int queueId;
 
     bool inGame;
-
 };
 
 
